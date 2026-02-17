@@ -61,6 +61,9 @@ class User extends BaseUser implements EmailTwoFactorInterface, GoogleTwoFactorI
     #[Groups(['user_api', 'user_api_with_client'])]
     protected $name;
 
+    #[ORM\Column(name: 'dn', type: 'text', nullable: true)]
+    protected ?string $dn = null;
+
     /**
      * @var string
      *
@@ -195,6 +198,23 @@ class User extends BaseUser implements EmailTwoFactorInterface, GoogleTwoFactorI
     public function getName()
     {
         return $this->name;
+    }
+
+    public function setDn(?string $dn): self
+    {
+        $this->dn = $dn;
+
+        return $this;
+    }
+
+    public function getDn(): ?string
+    {
+        return $this->dn;
+    }
+
+    public function isLdapUser(): bool
+    {
+        return null !== $this->dn;
     }
 
     /**

@@ -68,6 +68,10 @@ class AppKernel extends Kernel
             new WebpackEncoreBundle(),
         ];
 
+        if (class_exists('FR3D\\LdapBundle\\FR3DLdapBundle')) {
+            $bundles[] = new FR3D\LdapBundle\FR3DLdapBundle();
+        }
+
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new DebugBundle();
             $bundles[] = new WebProfilerBundle();
@@ -99,6 +103,56 @@ class AppKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load($this->getProjectDir() . '/app/config/config_' . $this->getEnvironment() . '.yml');
+
+        $loader->load(function (ContainerBuilder $container) use ($loader): void {
+            if (!$container->hasParameter('ldap_enabled') || true !== $container->getParameter('ldap_enabled')) {
+                return;
+            }
+
+            if (!class_exists('FR3D\\LdapBundle\\FR3DLdapBundle')) {
+                throw new RuntimeException('LDAP is enabled but FR3D LDAP Bundle is not installed. Please run composer require fr3d/ldap-bundle.');
+            }
+
+            $container->prependExtensionConfig('fr3_d_ldap', [
+                'service' => [
+                    'user_hydrator' => 'ldap_user_hydrator',
+                ],
+                'driver' => [
+                    'host' => $container->getParameter('ldap_host'),
+                    'port' => $container->getParameter('ldap_port'),
+                    'useSsl' => $container->getParameter('ldap_ssl'),
+                    'useStartTls' => $container->getParameter('ldap_tls'),
+                    'bindRequiresDn' => $container->getParameter('ldap_bind_requires_dn'),
+                    'username' => $container->getParameter('ldap_manager_dn'),
+                    'password' => $container->getParameter('ldap_manager_pw'),
+                ],
+                'user' => [
+                    'baseDn' => $container->getParameter('ldap_base'),
+                    'filter' => $container->getParameter('ldap_filter'),
+                    'usernameAttribute' => $container->getParameter('ldap_username_attribute'),
+                ],
+            ]);
+
+            $container->prependExtensionConfig('security', [
+                'providers' => [
+                    'chain_provider' => [
+                        'chain' => [
+                            'providers' => ['fr3d_ldapbundle', 'fos_userbundle'],
+                        ],
+                    ],
+                    'fr3d_ldapbundle' => [
+                        'id' => 'fr3d_ldap.security.user.provider',
+                    ],
+                ],
+                'firewalls' => [
+                    'main' => [
+                        'fr3d_ldap' => null,
+                    ],
+                ],
+            ]);
+
+            $loader->load($this->getProjectDir() . '/app/config/services_ldap.yml');
+        });
 
         $loader->load(function (ContainerBuilder $container): void {
             // $container->setParameter('container.autowiring.strict_mode', true);

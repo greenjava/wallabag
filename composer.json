@@ -199,7 +199,8 @@
         "symfony/polyfill-php82": "*"
     },
     "suggest": {
-        "ext-imagick": "To keep GIF animation when downloading image is enabled"
+        "ext-imagick": "To keep GIF animation when downloading image is enabled",
+        "fr3d/ldap-bundle": "If you want to authenticate users via LDAP"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

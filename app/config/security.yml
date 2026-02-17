@@ -13,6 +13,9 @@ security:
                 property: username
         fos_userbundle:
             id: fos_user.user_provider.username_email
+        chain_provider:
+            chain:
+                providers: [fos_userbundle]
 
     # the main part of the security, where you can set up firewalls
     # for specific sections of your app
@@ -31,7 +34,7 @@ security:
             fos_oauth: true
             stateless: true
             anonymous: true
-            provider: fos_userbundle
+            provider: chain_provider
 
         login_firewall:
             pattern: ^/login$
@@ -40,7 +43,7 @@ security:
         main:
             pattern: ^/
             form_login:
-                provider: fos_userbundle
+                provider: chain_provider
                 csrf_token_generator: security.csrf.token_manager
 
             anonymous: true
@@ -55,7 +58,7 @@ security:
                 target: /
 
             two_factor:
-                provider: fos_userbundle
+                provider: chain_provider
                 auth_form_path: 2fa_login
                 check_path: 2fa_login_check
 
