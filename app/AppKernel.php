@@ -68,10 +68,6 @@ class AppKernel extends Kernel
             new WebpackEncoreBundle(),
         ];
 
-        if (class_exists('FR3D\\LdapBundle\\FR3DLdapBundle')) {
-            $bundles[] = new FR3D\LdapBundle\FR3DLdapBundle();
-        }
-
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new DebugBundle();
             $bundles[] = new WebProfilerBundle();
@@ -109,44 +105,39 @@ class AppKernel extends Kernel
                 return;
             }
 
-            if (!class_exists('FR3D\\LdapBundle\\FR3DLdapBundle')) {
-                throw new RuntimeException('LDAP is enabled but FR3D LDAP Bundle is not installed. Please run composer require fr3d/ldap-bundle.');
+            if (!class_exists('Symfony\\Component\\Ldap\\Ldap')) {
+                throw new RuntimeException('LDAP is enabled but Symfony LDAP component is not installed. Please run composer require symfony/ldap.');
             }
 
-            $container->prependExtensionConfig('fr3_d_ldap', [
-                'service' => [
-                    'user_hydrator' => 'ldap_user_hydrator',
-                ],
-                'driver' => [
-                    'host' => $container->getParameter('ldap_host'),
-                    'port' => $container->getParameter('ldap_port'),
-                    'useSsl' => $container->getParameter('ldap_ssl'),
-                    'useStartTls' => $container->getParameter('ldap_tls'),
-                    'bindRequiresDn' => $container->getParameter('ldap_bind_requires_dn'),
-                    'username' => $container->getParameter('ldap_manager_dn'),
-                    'password' => $container->getParameter('ldap_manager_pw'),
-                ],
-                'user' => [
-                    'baseDn' => $container->getParameter('ldap_base'),
-                    'filter' => $container->getParameter('ldap_filter'),
-                    'usernameAttribute' => $container->getParameter('ldap_username_attribute'),
-                ],
-            ]);
+            $encryption = null;
+            if (true === $container->getParameter('ldap_ssl')) {
+                $encryption = 'ssl';
+            } elseif (true === $container->getParameter('ldap_tls')) {
+                $encryption = 'tls';
+            }
+
+            $container->setParameter('ldap_encryption', $encryption);
 
             $container->prependExtensionConfig('security', [
                 'providers' => [
                     'chain_provider' => [
                         'chain' => [
-                            'providers' => ['fr3d_ldapbundle', 'fos_userbundle'],
+                            'providers' => ['fos_userbundle'],
                         ],
-                    ],
-                    'fr3d_ldapbundle' => [
-                        'id' => 'fr3d_ldap.security.user.provider',
                     ],
                 ],
                 'firewalls' => [
                     'main' => [
-                        'fr3d_ldap' => null,
+                        'form_login' => null,
+                        'form_login_ldap' => [
+                            'provider' => 'chain_provider',
+                            'service' => 'Symfony\\Component\\Ldap\\Ldap',
+                            'dn_string' => $container->getParameter('ldap_dn_string'),
+                            'query_string' => $container->getParameter('ldap_filter'),
+                            'search_dn' => $container->getParameter('ldap_manager_dn'),
+                            'search_password' => $container->getParameter('ldap_manager_pw'),
+                            'csrf_token_generator' => 'security.csrf.token_manager',
+                        ],
                     ],
                 ],
             ]);

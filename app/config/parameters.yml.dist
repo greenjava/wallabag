@@ -67,17 +67,19 @@ parameters:
     sentry_dsn: ~
 
     # LDAP configuration
-    # To enable, you need to require fr3d/ldap-bundle
+    # To enable, you need to require symfony/ldap
     ldap_enabled: false
     ldap_host: localhost
     ldap_port: 389
     ldap_tls: false
     ldap_ssl: false
-    ldap_bind_requires_dn: true
     ldap_base: dc=example,dc=com
+    # base DN used by form_login_ldap to search users
+    ldap_dn_string: dc=example,dc=com
     ldap_manager_dn: ou=Manager,dc=example,dc=com
     ldap_manager_pw: password
-    ldap_filter: (&(ObjectClass=Person))
+    # placeholders {uid_key} and {username} are replaced by Symfony
+    ldap_filter: (&({uid_key}={username})(ObjectClass=Person))
     # optional (if null: no ldap user is admin)
     ldap_admin_filter: ~
     ldap_username_attribute: uid

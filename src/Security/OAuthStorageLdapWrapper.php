@@ -9,12 +9,11 @@ use Wallabag\Entity\User;
 
 class OAuthStorageLdapWrapper extends OAuthStorage
 {
-    /** @var object */
-    private $ldapManager;
+    private LdapBinder $ldapBinder;
 
-    public function setLdapManager($ldapManager): void
+    public function setLdapBinder(LdapBinder $ldapBinder): void
     {
-        $this->ldapManager = $ldapManager;
+        $this->ldapBinder = $ldapBinder;
     }
 
     public function checkUserCredentials(IOAuth2Client $client, $username, $password)
@@ -26,21 +25,17 @@ class OAuthStorageLdapWrapper extends OAuthStorage
             return false;
         }
 
-        if (method_exists($user, 'isLdapUser') && true === $user->isLdapUser()) {
-            return $this->checkLdapUserCredentials($user, $password);
-        }
-
-        return parent::checkUserCredentials($client, $username, $password);
-    }
-
-    private function checkLdapUserCredentials(User $user, string $password)
-    {
-        if ($this->ldapManager->bind($user, $password)) {
+        if ($this->checkLdapUserCredentials($user->getUsername(), (string) $password)) {
             return [
                 'data' => $user,
             ];
         }
 
-        return false;
+        return parent::checkUserCredentials($client, $username, $password);
+    }
+
+    private function checkLdapUserCredentials(string $username, string $password): bool
+    {
+        return $this->ldapBinder->bind($username, $password);
     }
 }
