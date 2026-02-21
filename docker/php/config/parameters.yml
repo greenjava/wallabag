@@ -50,3 +50,17 @@ parameters:
 
     # Sentry
     sentry_dsn: ${SENTRY_DSN:-~}
+
+    # LDAP
+    ldap_enabled: ${LDAP_ENABLED:-false}
+    ldap_host: ${LDAP_HOST:-localhost}
+    ldap_port: ${LDAP_PORT:-389}
+    ldap_tls: ${LDAP_TLS:-false}
+    ldap_ssl: ${LDAP_SSL:-false}
+    ldap_base: ${LDAP_BASE:-dc=example,dc=com}
+    ldap_dn_string: ${LDAP_DN_STRING:-dc=example,dc=com}
+    ldap_manager_dn: ${LDAP_MANAGER_DN:-~}
+    ldap_manager_pw: ${LDAP_MANAGER_PW:-~}
+    ldap_filter: ${LDAP_FILTER:-'(&({uid_key}={username})(ObjectClass=Person))'}
+    ldap_username_attribute: ${LDAP_USERNAME_ATTRIBUTE:-uid}
+    ldap_email_attribute: ${LDAP_EMAIL_ATTRIBUTE:-mail}

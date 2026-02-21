@@ -39,13 +39,16 @@ RUN apt-get update && apt-get install -y \
         libzip-dev \
         libfreetype6-dev \
         zlib1g-dev \
+        libldap2-dev \
         git \
         build-essential \
         nodejs
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
+RUN docker-php-ext-configure ldap --with-libdir="lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
 RUN docker-php-ext-install -j "$(nproc)" \
         bcmath \
         gd \
+        ldap \
         gettext \
         iconv \
         intl \

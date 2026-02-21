@@ -135,6 +135,7 @@
         "symfony/http-foundation": "^5.4.48",
         "symfony/http-kernel": "^5.4.48",
         "symfony/intl": "^5.4.47",
+        "symfony/ldap": "^5.4",
         "symfony/mailer": "^5.4.45",
         "symfony/mime": "^5.4.45",
         "symfony/monolog-bundle": "^3.10",
@@ -199,8 +200,7 @@
         "symfony/polyfill-php82": "*"
     },
     "suggest": {
-        "ext-imagick": "To keep GIF animation when downloading image is enabled",
-        "symfony/ldap": "If you want to authenticate users via LDAP"
+        "ext-imagick": "To keep GIF animation when downloading image is enabled"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
