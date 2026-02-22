@@ -12,9 +12,8 @@ mkdir "$TMP_FOLDER"/"$RELEASE_FOLDER"
 git clone https://github.com/greenjava/wallabag.git --single-branch --depth 1 --branch $1 "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION"
 cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && yarn install --non-interactive
 cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && yarn run --non-interactive build:prod
-cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && SYMFONY_ENV="$ENV" COMPOSER_MEMORY_LIMIT=-1 composer install -n --no-dev
-cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && php bin/console wallabag:install --env="$ENV" -n
-cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && php bin/console assets:install --env="$ENV" --symlink --relative
+cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && SYMFONY_ENV="$ENV" COMPOSER_MEMORY_LIMIT=-1 composer install -n --no-dev --no-scripts
+cd "$TMP_FOLDER"/"$RELEASE_FOLDER"/"$VERSION" && SYMFONY_ENV="$ENV" composer dump-autoload --optimize
 cd "$TMP_FOLDER"/"$RELEASE_FOLDER" && tar czf "$VERSION".tar.gz --exclude="var/cache/*" --exclude="var/logs/*" --exclude="var/sessions/*" --exclude=".git" "$VERSION"
 echo "MD5 checksum of the package for wallabag $VERSION"
 md5sum "$VERSION".tar.gz
