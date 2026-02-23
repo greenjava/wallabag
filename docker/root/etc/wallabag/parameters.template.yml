@@ -12,6 +12,8 @@ parameters:
 
     domain_name: ${SYMFONY__ENV__DOMAIN_NAME:-https://your-wallabag-instance.wallabag.org}
 
+    wallabag_user_agent: "${SYMFONY__ENV__WALLABAG_USER_AGENT:-Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.92 Safari/535.2}"
+
     mailer_dsn: ${SYMFONY__ENV__MAILER_DSN:-smtp://127.0.0.1}
 
     locale: ${SYMFONY__ENV__LOCALE:-en}
