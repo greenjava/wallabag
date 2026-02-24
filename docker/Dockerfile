@@ -9,7 +9,7 @@ FROM golang:alpine AS builder
 # flag -ldflags "-s -w" produces a smaller executable
 RUN go install -ldflags "-s -w" -v github.com/a8m/envsubst/cmd/envsubst@v1.4.3
 
-FROM node:20-alpine AS assets-builder
+FROM --platform=linux/amd64 node:20-alpine AS assets-builder
 
 WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* ./
