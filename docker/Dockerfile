@@ -65,6 +65,7 @@ COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 # Copy docker config files (entrypoint, nginx, s6, wallabag templates)
 COPY docker/root /
+RUN chmod +x /entrypoint.sh
 
 # Copy wallabag source code
 RUN mkdir -p /var/www/wallabag
