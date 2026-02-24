@@ -13,17 +13,13 @@ services:
         tags:
             - ldap
 
-    fos_oauth_server.server:
-        class: OAuth2\OAuth2
-        arguments:
-            - '@oauth_storage_ldap_wrapper'
-            - '%fos_oauth_server.server.options%'
-            - '%fos_oauth_server.server.config%'
-            - '%fos_oauth_server.server.storage%'
+    fos_oauth_server.storage:
+        alias: oauth_storage_ldap_wrapper
+        public: true
 
     oauth_storage_ldap_wrapper:
         class: Wallabag\Security\OAuthStorageLdapWrapper
-        parent: fos_oauth_server.storage
+        parent: fos_oauth_server.storage.default
         calls:
             - [setLdapBinder, ['@Wallabag\Security\LdapBinder']]
 

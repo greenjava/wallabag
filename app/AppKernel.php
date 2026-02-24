@@ -100,13 +100,21 @@ class AppKernel extends Kernel
     {
         $loader->load($this->getProjectDir() . '/app/config/config_' . $this->getEnvironment() . '.yml');
 
-        $loader->load(function (ContainerBuilder $container) use ($loader): void {
-            if (!$container->hasParameter('ldap_enabled') || true !== $container->getParameter('ldap_enabled')) {
-                return;
-            }
-
+        // Load security config: LDAP variant or standard, based on env var read at boot time
+        // (cannot use container parameters here as they are not yet resolved)
+        $ldapEnabled = filter_var(getenv('SYMFONY__ENV__LDAP_ENABLED') ?: 'false', FILTER_VALIDATE_BOOLEAN);
+        if ($ldapEnabled) {
             if (!class_exists('Symfony\\Component\\Ldap\\Ldap')) {
                 throw new RuntimeException('LDAP is enabled but Symfony LDAP component is not installed. Please run composer require symfony/ldap.');
+            }
+            $loader->load($this->getProjectDir() . '/app/config/security_ldap.yml');
+        } else {
+            $loader->load($this->getProjectDir() . '/app/config/security.yml');
+        }
+
+        $loader->load(function (ContainerBuilder $container) use ($loader, $ldapEnabled): void {
+            if (!$ldapEnabled) {
+                return;
             }
 
             $encryption = null;
@@ -117,30 +125,6 @@ class AppKernel extends Kernel
             }
 
             $container->setParameter('ldap_encryption', $encryption);
-
-            $container->prependExtensionConfig('security', [
-                'providers' => [
-                    'chain_provider' => [
-                        'chain' => [
-                            'providers' => ['fos_userbundle'],
-                        ],
-                    ],
-                ],
-                'firewalls' => [
-                    'main' => [
-                        'form_login' => null,
-                        'form_login_ldap' => [
-                            'provider' => 'chain_provider',
-                            'service' => 'Symfony\\Component\\Ldap\\Ldap',
-                            'dn_string' => $container->getParameter('ldap_dn_string'),
-                            'query_string' => $container->getParameter('ldap_filter'),
-                            'search_dn' => $container->getParameter('ldap_manager_dn'),
-                            'search_password' => $container->getParameter('ldap_manager_pw'),
-                            'csrf_token_generator' => 'security.csrf.token_manager',
-                        ],
-                    ],
-                ],
-            ]);
 
             $loader->load($this->getProjectDir() . '/app/config/services_ldap.yml');
         });
