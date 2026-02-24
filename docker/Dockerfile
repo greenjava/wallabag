@@ -9,6 +9,15 @@ FROM golang:alpine AS builder
 # flag -ldflags "-s -w" produces a smaller executable
 RUN go install -ldflags "-s -w" -v github.com/a8m/envsubst/cmd/envsubst@v1.4.3
 
+FROM node:20-alpine AS assets-builder
+
+WORKDIR /app
+COPY package.json yarn.lock* package-lock.json* ./
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    else npm ci; fi
+COPY . .
+RUN npm run build:prod
+
 FROM alpine:3.22
 
 COPY --from=builder /go/bin/envsubst /usr/bin/envsubst
@@ -82,6 +91,9 @@ RUN set -ex \
  && SYMFONY_ENV=prod composer dump-autoload --optimize \
  && rm -rf /root/.composer/* var/cache/* var/logs/* var/sessions/* \
  && chown -R nobody:nobody /var/www/wallabag
+
+# Copy compiled frontend assets from assets-builder stage
+COPY --from=assets-builder --chown=nobody:nobody /app/web/build /var/www/wallabag/web/build
 
 ENV PATH="${PATH}:/var/www/wallabag/bin"
 
